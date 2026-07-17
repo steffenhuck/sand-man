@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Sand-Man — a game of letters</title>
+<meta name="description" content="A literary adventure after E. T. A. Hoffmann's Der Sandmann: one path is the novella itself; the rest is escape.">
+<script data-goatcounter="https://steffenhuck.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+<style>
+:root{--ink:#241b12;--red:#7a1a12;--paper:#efe4c9;--faded:#6b5a42;--rule:#c9b48a}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:#0b0908;background-image:radial-gradient(1100px 700px at 50% 10%,#1a120b 0%,#0b0908 72%);color:#e8dcc4;font-family:Georgia,"Times New Roman",serif;line-height:1.55;min-height:100vh}
+#page{display:flex;flex-direction:column;align-items:center;padding:3.5vh 1em 0}
+#leaf{position:relative;max-width:37em;width:100%;color:var(--ink);padding:2.6em 3em 2.2em;border-radius:2px;
+background:radial-gradient(140% 120% at 18% 0%,rgba(126,94,44,.10),transparent 55%),radial-gradient(120% 140% at 92% 100%,rgba(126,94,44,.15),transparent 50%),var(--paper);
+box-shadow:0 1px 2px rgba(0,0,0,.7),0 12px 60px rgba(0,0,0,.55),0 0 90px rgba(255,170,70,.07);transition:box-shadow 1.5s}
+body.dusk #leaf{box-shadow:0 1px 2px rgba(0,0,0,.7),0 12px 60px rgba(0,0,0,.6),0 0 100px rgba(150,60,20,.14)}
+body.deep #leaf{box-shadow:0 1px 2px rgba(0,0,0,.75),0 12px 60px rgba(0,0,0,.65),0 0 130px rgba(150,25,15,.26)}
+body.thin #leaf{background:radial-gradient(140% 120% at 18% 0%,rgba(110,84,40,.16),transparent 55%),radial-gradient(120% 140% at 92% 100%,rgba(110,84,40,.2),transparent 50%),#eadfc4}
+.runhead{text-align:center;font-size:.66em;letter-spacing:.34em;text-transform:uppercase;color:#8b7350;margin:0 0 1.5em}
+.lens{width:12px;height:12px;border:1px solid var(--red);border-radius:50%;margin:0 auto .55em;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.9),rgba(122,26,18,.15) 62%)}
+.date{text-align:center;font-variant:small-caps;letter-spacing:.2em;color:var(--red);font-size:.85em;margin:0 0 1.4em}
+#text p{margin:0 0 .9em;text-align:justify;hyphens:auto}
+#text p.nj{text-align:left}
+#text p:first-child::first-letter{font-size:2.6em;line-height:.72;float:left;padding:.05em .09em 0 0;color:var(--red)}
+body.thin #text p{color:#4a3c2b}
+.gap{color:var(--faded);font-style:italic}
+#choices{margin:1.7em 0 .3em;padding:0;list-style:none}
+.choice{display:block;width:100%;text-align:left;background:none;border:none;border-left:2px solid #b39b70;padding:.5em .9em;margin:.5em 0;font:italic 1em/1.45 Georgia,"Times New Roman",serif;color:#41301d;cursor:pointer;transition:.18s}
+.choice:hover,.choice:focus{border-left-color:var(--red);color:var(--red);background:rgba(122,26,18,.05);outline:none}
+.bare{border-left:none;text-align:center;color:var(--faded)}
+.bare:hover,.bare:focus{background:none}
+h1{font-variant:small-caps;text-align:center;font-weight:normal;letter-spacing:.12em;font-size:2.1em;margin:.15em 0 .05em}
+.sub{text-align:center;font-style:italic;color:#5c4a33;margin:0 0 .35em}
+.cred{text-align:center;font-size:.8em;color:#6b5a42;margin:0 0 1.6em}
+.rule{border:none;border-top:1px solid var(--rule);margin:1.4em 4em}
+.finis h2{font-variant:small-caps;font-weight:normal;letter-spacing:.3em;text-align:center;font-size:1.3em;margin:.2em 0 .7em}
+.verdict{text-align:center;font-style:italic;margin:0 0 1.2em}
+.account{font-size:.85em;color:#4a3c2b;margin:1.2em 0 0}
+.account ul{margin:.3em 0 .8em 1.2em;padding:0}
+.account li{margin:.2em 0}
+footer{margin:2.2em 0 3.2em;font-style:italic;font-size:.95em}
+footer a{color:#8b7350;text-decoration:none;border-bottom:1px dotted #8b7350}
+@media(max-width:640px){#leaf{padding:1.7em 1.25em}#text p{text-align:left}}
+</style>
+</head>
+<body>
+<div id="page">
+  <div id="leaf">
+    <noscript><p style="text-align:center;font-style:italic">This book turns its own pages: it needs JavaScript to be read.</p></noscript>
+    <div id="stage"></div>
+  </div>
+  <footer><a href="https://steffenhuck.github.io">steffen huck</a></footer>
+</div>
+<script>
+/* THE ESCAPABLE CANON — vol.: The Sand-Man (Hoffmann / Bealby 1885) */
+"use strict";
+
+function newState(){return {f:{oath:false,glass:false,poem:false,clara:true,siegmund:false},m:[],dep:[],stray:[],seen:[],node:"s1"};}
+function has(S,k){return S.m.indexOf(k)>=0;}
+function P(){var a=[].slice.call(arguments).filter(Boolean);return a.map(function(x){return "<p>"+x+"</p>";}).join("");}
+
+var NODES={
+
+/* ============ ACT I — THE LETTERS ============ */
+
+s1:{canon:true,date:"G——, the 30th of October, at noon",
+text:function(S){return P(
+"The file begins with a knock. Nathanael — a student of the university town of G——, a young man betrothed, given to poetry and to natural philosophy in unequal doses — is at his desk when a dealer in weather-glasses works his way into the room: barometers, thermometers, lenses for every purpose. The hawker is old, broad-built, grey about the brows, and his voice does not fit his wares.",
+"Nathanael’s own account of the visit, in the first of his letters, is briefer than fear usually is: “I bought nothing, and threatened to kick him downstairs, whereupon he went away of his own accord.”",
+"The papers do not say what <i>you</i> will do."
+);},
+choices:function(S){return [
+{t:"Threaten to kick the hawker downstairs",canon:true,go:"s2"},
+{t:"Buy one small weather-glass, to be rid of the man the cheaper way",go:"s2",mark:"barometer"},
+{t:"Ask the hawker his name before he goes",go:"s2",mark:"name"}
+];}},
+
+s2:{canon:true,date:"the same night",
+text:function(S){return P(
+"By candle he writes to Lothair — the brother of his betrothed Clara; both orphans raised in Nathanael’s mother’s house, and the nearest thing he has to a friend. Why should a peddler frighten a grown man? The explanation begins at nine o’clock, years deep.",
+"In his childhood, every evening at nine, a visitor climbed the stair to his father’s room, and the children were put to bed with the words: <i>the Sand-man is coming.</i> His mother said the Sand-man was only a manner of speaking — you are sleepy, “as if somebody had put sand in your eyes.” The old nurse said otherwise: a wicked man who throws sand in children’s eyes till they “jump out of their heads all bloody,” and carries the eyes to the half-moon to feed his hook-beaked brood.",
+"Two tellings. The letter has room for one first."
+);},
+choices:function(S){return [
+{t:"Give Lothair the nurse’s tale, eyes and all — it is the one that took root",canon:true,go:"s3"},
+{t:"Give him mother’s version — there is no Sand-man — and let the dread look foolish on paper",go:"s3",mark:"mother"}
+];}},
+
+s3:{canon:true,date:"from the same letter: his tenth year",setpiece:true,
+text:function(S){return P(
+"One night the boy hid behind the curtain of his father’s open wardrobe, to see the Sand-man at last. He came — and he was the advocate Coppelius, an old lawyer who sometimes dined with the family: a large broad-shouldered man with an immense head, a face the colour of yellow-ochre, green cat’s eyes under grey bushy brows, and big coarse hairy hands that spoiled whatever they touched — he would finger the children’s cake for the pleasure of watching them refuse it.",
+"Father and guest put on long black smocks. A cupboard in the wall proved to be no cupboard but a hearth; a blue flame crackled up; tongs, smoke — and round about, so the letter swears, faces without eyes: ghastly deep black holes where eyes should be. “Eyes here! Eyes here!” cried Coppelius. The boy screamed and was hauled out of hiding. Red-hot grains stood poised over his eyes when his father begged: “Master, master, let my Nathanael keep his eyes.”",
+"He kept them, and paid with a fever of many weeks. Now Lothair is to read all this — or some of it."
+);},
+choices:function(S){return [
+{t:"Set down all of it, the eyeless faces too",canon:true,go:"s4"},
+{t:"Set down only that Coppelius ill-used you, and that the fever followed",go:"s4",mark:"spared"}
+];}},
+
+s4:{canon:true,date:"from the same letter: a year after",short:true,
+text:function(S){return P(
+"A year on, at the stroke of nine, Coppelius returned to the father’s room. At midnight a blast shook the house. His father lay dead by the smoking hearth, face burned black. Two days later, in the coffin, the face was mild again."
+);},
+choices:function(S){return [
+{t:"Swear, over the coffin, to revenge your father’s death on Coppelius",canon:true,go:"s5",set:{oath:true}},
+{t:"Bury the name Coppelius with him",go:"s5"}
+];}},
+
+s5:{canon:true,date:"early November: the letter sealed",
+text:function(S){return P(
+"Now the point of the whole letter. The weather-glass man of the 30th of October was — Nathanael is certain of it — Coppelius himself, barely disguised, "+(has(S,"name")?"and the name he gave with a bow on the stairs confirms the disguise: he goes now by":"going now by")+" <i>Giuseppe Coppola</i>, and calling himself a Piedmontese mechanician and optician.",
+S.f.oath?
+"“I am resolved to enter the lists against him,” the letter ends, “and revenge my father’s death, let the consequences be what they may.” Only — not a word of the man’s return to his mother.":
+"The letter ends more quietly: not a word of the man’s return is to reach his mother, who believes Coppelius killed her husband and cannot hear the name.",
+"It wants only a direction. His mind, as he folds the sheet, is on a yellow-grey face; his hand holds the pen over the cover."
+);},
+choices:function(S){return [
+{t:"Direct the letter carefully, watching your own hand: To Lothair",go:"s6b"},
+{t:"Direct the letter with your mind still on Coppelius",canon:true,go:"s6"}
+];}},
+
+s6:{canon:true,date:"by return of post: Clara to Nathanael",
+text:function(S){return P(
+"Absence of mind directed the letter not to Lothair but to Clara — his betrothed, remember: a clear-headed, bright, unfrightened girl whom dreamers call cold. She tore it open in joy, read what was never meant for her, wept over it, and answered it herself.",
+"Her doctrine, in brief: the terrible thing lives chiefly in Nathanael. Coppelius was a child-hating old man, and hateful, but a man; the night-work with his father was likely secret alchemy; the explosion, the father’s own imprudence — she has asked the neighbour chemist, who says such accidents occur. “It is only the belief in their hostile power,” she writes, “which can in reality make them dangerous to you.” And she promises, laughing, to stand guardian-angel against the Sand-man, and drive him off with a good hearty laugh.",
+"A calm hand, offered across the dark. It requires an answer."
+);},
+choices:function(S){return [
+{t:"Read Clara’s letter twice, and take her counsel to heart",go:"s7",mark:"counsel"},
+{t:"Answer Clara coldly — this is scholastic stuff, and Lothair’s coaching is all over it",canon:true,go:"s7"}
+];}},
+
+s6b:{date:"by return of post: Lothair to Nathanael",
+text:function(S){return P(
+"Lothair answers like the level man he is — but he read the letter aloud at home, and half the reply is Clara’s, dictated over his shoulder and finished in her own hand below his signature.",
+"Her postscript-doctrine, in brief: the terrible thing lives chiefly in Nathanael himself. Coppelius was a hateful old man, but a man; the night-work was likely alchemy; the explosion, the father’s own imprudence. “It is only the belief in their hostile power which can in reality make them dangerous to you.” She promises, laughing, to stand guardian-angel against the Sand-man.",
+"A calm hand, offered across the dark. It requires an answer."
+);},
+choices:function(S){return [
+{t:"Read Clara’s postscript twice, and take her counsel to heart",go:"s7",mark:"counsel"},
+{t:"Answer coldly — Clara’s philosophy smells of Lothair’s lectures",go:"s7"}
+];}},
+
+s7:{canon:true,date:"November: the second letter",
+text:function(S){return P(
+"He writes again to Lothair"+(has(S,"counsel")?", gentler than he meant to be,":"")+" with two reassurances and one strangeness.",
+"First: his newly appointed professor of physics, <i>Spalanzani</i> — a little fat Italian with prominent cheek-bones and small piercing eyes — has known Coppola for years, and the man really is a Piedmontese; whereas Coppelius, whoever he was, was a German. So the hawker is not the Sand-man, and reason is satisfied. “Nevertheless I am not quite satisfied.”",
+"Second, the strangeness: through a chink in a curtained glass door at Spalanzani’s house he has seen a tall, perfectly proportioned young woman sitting motionless at a little table — the professor’s daughter, <i>Olimpia</i>, whom Spalanzani keeps locked from every eye. “I thought she was sleeping with her eyes open.”",
+"He closes with a promise: in a fortnight he comes home to them all."
+);},
+choices:function(S){return [
+{t:"Come home in a fortnight, as the letter promises",canon:true,go:"s8"},
+{t:"Linger a week more over the term’s work first",go:"s8",mark:"lingered"}
+];}},
+
+/* ============ ACT II — HOME ============ */
+
+s8:{canon:true,date:"mid-November: his mother’s house",
+text:function(S){return P(
+"The file dries up here — no letters pass between people under one roof — and the editor must speak from what Lothair told him, once, and would not tell twice.",
+"Nathanael came home"+(has(S,"lingered")?", a week late and unscolded":"")+". His mother, a widow all these years since the night of the explosion, wept at the door; Lothair gripped his hand; and Clara — “with what delight did she fly into his arms.” The book records that in that instant he thought neither of Coppelius nor of her sensible letter; his ill-humour was gone like a coat left in the coach.",
+"The visit stretches ahead: winter mornings, one table, the four of them. It can be spent more than one way."
+);},
+choices:function(S){return [
+{t:"Give yourself over to the joy of the house",canon:true,go:"s9"},
+{t:"Tell them all, the first evening, everything about Coppola",go:"s9",mark:"told"}
+];}},
+
+s9:{canon:true,date:"the winter mornings",
+text:function(S){return P(
+(has(S,"told")?"He told them of Coppola the first evening; his mother left the room white, and it was not spoken of again. ":"")+
+"Within days the change in him shows. He is gloomy; he talks of dark powers; he maintains that every man, delusively imagining himself free, is only “the plaything of the cruel sport of mysterious powers.” Clara will have none of it — not coldly, but as one moves a candle away from a curtain.",
+"Mornings, while she makes the breakfast, he stands beside her reading aloud from mystical books, until she begs him: if she must let things go their own way and look into his eyes while he reads, “the coffee will all boil over into the fire, and you will none of you get any breakfast.”",
+"He can bang the book shut and go — or put it down. The mornings add up to something, either way."
+);},
+choices:function(S){return [
+{t:"Read on to her — she must be made to understand the dark powers",canon:true,go:"s10"},
+{t:"Put the book down; carry the cups; say nothing",go:"s10",mark:"gentle"},
+{t:"Leave the house and walk alone till noon",go:"s10",mark:"walks"}
+];}},
+
+s10:{canon:true,date:"December: the poem",
+text:function(S){return P(
+"There is a poem in him. He has felt it for days: Coppelius as Destiny itself, wrecking a love — himself and Clara at the altar, and the terrible man touching Clara’s eyes, which spring “like bloody sparks” into Nathanael’s own breast; then a circle of fire, spinning, and a voice out of it calling him to look, to look.",
+"He knows already that it will frighten her. Some part of him wants exactly that — her cool temperament <i>enkindled</i>. And a poem, once written and polished, will not stay in a drawer; it will demand to be read aloud, in a garden, to its subject.",
+"It need never exist at all."
+);},
+choices:function(S){return [
+{t:"Write it — file and polish every line until all is pure and musical",canon:true,go:"s11",set:{poem:true}},
+{t:"Let it die unwritten; write instead a letter of small news to Siegmund, a friend kept waiting in G——",go:"s11b"}
+];}},
+
+s11:{canon:true,date:"a mild day: the garden",
+text:function(S){return P(
+"Three days of writing have made him almost cheerful — the poison drawn off into ink. In his mother’s little garden Clara says: “Ah! now I have you again. We have driven away that ugly Coppelius, you see.” Then he remembers the manuscript in his pocket.",
+"He reads. The knitting sinks to her lap. Her eyes fix on his face; the fiery circle turns; his own cheeks burn and the tears come — and at the end, drawing him softly to her heart, she gives her verdict, low and grave and entire: “Nathanael, my darling Nathanael, throw that foolish, senseless, stupid thing into the fire.”",
+"The garden holds its breath."
+);},
+choices:function(S){return [
+{t:"Thrust Clara from you and cry it: “You damned lifeless automaton!”",canon:true,go:"s12",set:{clara:false}},
+{t:"Drop the manuscript into the kitchen fire, and your face into her hands",go:"s13",set:{clara:true},mark:"burned"}
+];}},
+
+s11b:{date:"the garden, without a manuscript",
+text:function(S){return P(
+"Quiet days instead. He walks with Clara in the winter garden; the dread is not dead, but it sleeps, and she has the sense not to congratulate it. Lothair teaches him a card game; the mother hums.",
+"The coach for G—— is bespoken for the week’s end. A year of study remains before he can settle home for life."
+);},
+choices:function(S){return [
+{t:"Speak of the future: one year at G——, then home for good",go:"s13"},
+{t:"Confess to Clara that the dread is only sleeping, not dead",go:"s13",mark:"confessed"}
+];}},
+
+s12:{canon:true,date:"next morning: behind the garden wall",
+text:function(S){return P(
+"Lothair heard his sister weeping and had the whole scene from her. Words followed between the two men — “fantastic, crack-brained fool” answered with “miserable, common, everyday sort of fellow” — and by the custom of the students of the place, such words end with sharp rapiers, at dawn, behind the garden wall.",
+"Coats off; the fencing-master’s blades; two silent men. Then the garden door bursts: Clara — who had seen the rapiers carried past at dusk and guessed everything — throws herself between the points. “Cut me down before you attack each other; for how can I live when my lover has slain my brother, or my brother slain my lover?”",
+"Lothair’s blade drops to the grass. Yours is still up."
+);},
+choices:function(S){return [
+{t:"Throw yourself at Clara’s feet and beg forgiveness of them both",canon:true,go:"s13",set:{clara:true}},
+{t:"Lower the rapier; say nothing; let time do the mending",go:"s13",set:{clara:false}}
+];}},
+
+s13:{canon:true,date:"December: the coach for G——",short:true,
+text:function(S){return P(
+(S.f.clara?"Three days of peace — the three happiest the house had known in years":"Three quiet, mended-seeming days")+"; then the coach at the door. A year of study remains at G—— before he can settle home for life."
+);},
+choices:function(S){var c=[
+{t:"Take your seat; the term is waiting",canon:true,go:"s14"}];
+if(S.f.clara)c.push({t:"Stay. Ask for the wedding now, and never see G—— again",go:"b1"});
+return c;}},
+
+/* ============ ACT III — G—— AGAIN ============ */
+
+s14:{canon:true,date:"January: G—— again",
+text:function(S){return P(
+"He returns to find his lodging-house burnt to the ground — a fire in the chemist’s laboratory below, and nothing left standing but bare outer walls. His friends had forced a way in and saved his books, manuscripts and instruments, and engaged him a new room.",
+"It happens — the editor can find no design in it, and reports only the fact — that the new room stands opposite Professor Spalanzani’s house; and that from his window Nathanael looks straight into the chamber where Olimpia — the professor’s guarded daughter, glimpsed once through a glass door — sits for hours at her little table, unoccupied, facing his way. “He could not but confess to himself that he had never seen a finer figure.”",
+(has(S,"barometer")?"His own weather-glass, bought of a hawker one October noon, hangs on the new wall, indifferent. ":"")+
+"Still: Clara is mistress of his heart, and the still figure across the street is, for now, nothing to him."
+);},
+choices:function(S){return [
+{t:"Hang a curtain across your own window",go:"s15",mark:"curtain"},
+{t:"Work at your compendium; a glance across the street now and then does no harm",canon:true,go:"s15"},
+{t:"Write to Clara tonight: the fire, the new room, the strange neighbour",go:"s15",mark:"wrote"}
+];}},
+
+s15:{canon:true,date:"February: a light tap at the door",setpiece:true,
+text:function(S){return P(
+"He is writing to Clara when someone taps. Coppola’s face comes round the door — the weather-glass hawker of October, the man with the advocate Coppelius’s features. Hold to what reason has established: this is Spalanzani’s countryman, an honest Piedmontese optician; not the advocate; not the Sand-man. Nathanael masters himself: he wants no weather-glasses; the man may go.",
+"The hawker comes wholly in instead. “What! Nee weather-gless? Nee weather-gless? ’ve got foine oyes as well — foine oyes!” And onto the table, out of bottomless coat-pockets, come spectacles — dozens, then hundreds, heaped and gleaming, until the wood flashes over its whole length and “a thousand eyes looked and blinked convulsively, and stared up at Nathanael.”",
+"He cries <i>stop, stop, you terrible man</i> — and Coppola, laughing harshly, sweeps them away — harmless glass after all — and lays out instead the pocket-perspectives: small clean spy-glasses, bright, and singular in nothing. Nathanael’s terror stands in the room like a guest with no coat to take. To buy some small thing would square the account with his own foolishness — proof, three ducats cheap, that the man is only a tradesman.",
+"On such proofs, whole fates have been hung."
+);},
+choices:function(S){var c=[
+{t:"Buy the small perspective glass — “Tre zechini” — and prove your fear a fool",canon:true,go:"s16",set:{glass:true}},
+{t:"Buy nothing; show the optician the stairs",go:"s16"}];
+if(S.f.oath)c.push({t:"Seize your hat when he goes, and follow the Sand-man down the stairs",go:"a1"});
+return c;}},
+
+s16:{canon:true,date:"the days following",
+text:function(S){return S.f.glass?P(
+"No glass he ever held brought things out so clearly. Proving it at the window, he turns it — involuntarily, the account insists — upon Spalanzani’s room. Olimpia sits as ever at the little table. Through the lens her face has a regular and exquisite beauty; and her eyes, fixed and dead at first look, kindle as he watches — “a light like humid moonbeams” rising in them.",
+"Coppola takes his three ducats and goes, laughing loudly on the stairs. The letter to Clara lies where it was, unfinished. Nathanael stands at the window, hour on hour, the glass at his eye. On the third day curtains are drawn across the window opposite, and he walks the fields outside the walls half-mad with longing, Olimpia’s image before him in the air. Of Clara the account says only this: her image “was completely faded from his mind.”"
+):P(
+"The optician sweeps his wares together"+(has(S,"name")?" — no sale for Giuseppe Coppola this time —":"")+" and goes, laughing loudly on the stairs; the laugh follows Nathanael about the room for an hour, and then wears off, as laughs do.",
+"The room opposite keeps its distance without a lens. Olimpia sits at her little table like a figure in a far-off painting"+(has(S,"curtain")?", behind his own new curtain’s edge":"")+"; after some days a servant draws her window-curtains too, and the street is only a street. He finishes the letter to Clara and posts it"+(has(S,"wrote")?", the second in a week":"")+".",
+"The term grinds on. Something in him is quieter for having bought nothing; something else is listening for the stairs."
+);},
+choices:function(S){return S.f.glass?[
+{t:"Keep the watch at the window, hour on hour, the glass at your eye",canon:true,go:"s17"},
+{t:"Force yourself first to finish and post the letter to Clara",go:"s17",mark:"posted"}
+]:[
+{t:"So much the better; work at the compendium",go:"s17"},
+{t:"Ask about the town, idly, what is known of the professor’s daughter",go:"s17",mark:"asked_town"}
+];}},
+
+s17:{canon:true,date:"March: the invitation",short:true,
+text:function(S){return P(
+"Spalanzani turns his gloomy house inside out: a grand concert and ball, half the university invited — and, the town’s one topic, his guarded daughter Olimpia to appear at last before the world. An invitation reaches Nathanael. <i>Siegmund</i> — his level-headed friend and fellow-student — will go too."
+);},
+choices:function(S){var c=[];
+if(S.f.glass)c.push({t:"Go, the little perspective in your pocket",canon:true,go:"s18",mark:"ballglass"});
+c.push({t:"Go at Siegmund’s side, and stay at Siegmund’s side",go:"s18",set:{siegmund:true}});
+if(!S.f.glass)c.push({t:"Go, curious as all the town is curious",go:"s18"});
+return c;}},
+
+s18:{canon:true,date:"the night of the ball",setpiece:true,
+text:function(S){return has(S,"ballglass")?P(
+"Carriages rolling up; lights gleaming in the decorated halls; the company numerous and brilliant. Olimpia appears, richly and tastefully dressed — admired for her figure and her regular beauty, though something stiff and measured in her gait strikes many; it is put down to the constraint of company. The concert begins. She plays the piano with great skill, and sings an aria in a voice “almost too sharp, but clear as glass bells.”",
+"Nathanael, wedged in the back rows, cannot make out her features in the blaze of candles — and so, unseen, he takes out Coppola’s glass. Through the lens her yearning eyes seek his; every note reaches its purity inside that gaze. When the long trill of the cadenza rings out he cannot help himself: he shouts “Olimpia!” into the hall. Heads turn; some laugh; the cathedral organist says merely, “Very well!”",
+"Then the ball. He finds himself, who knows how, beside her at the first dance, and grasps her hand — <i>cold as ice</i>, cold as a dead thing; a frosty shiver goes through him. But her glance is all love and longing, and the pulse seems to start warm under the cold skin, and he whirls her round the hall — her time so perfectly even that his own dancing is put out by it. Twice other partners approach; afterwards, strangely, nobody asks her again. There is smothered laughter in the corners of the room; he does not hear it. He sits beside her, wine-warmed, pouring out his love in words neither of them understands, and she answers, at intervals, gazing at him steadily: “Ach! Ach!”",
+"The candles burn down. Cold lips meet his burning ones. As he leaves, Spalanzani smiles: “If you find pleasure in talking to the stupid girl, I am sure I shall be glad for you to come and do so.” A whole heaven, adjourned till morning."
+):P(
+"Carriages, lights, the company numerous and brilliant. Olimpia appears at last — a beautiful figure, richly dressed — and the town gets what it came for: she plays the piano with immense skill and sings like a set of glass bells; and there is something wrong. Her gait is stiff and measured; her playing keeps a time no living breath keeps; when she dances — Nathanael asks her once, out of curiosity or bravado — the hand he takes is <i>cold as ice</i>, and stays cold, and no glance warms it. A frosty shiver runs through him and does not leave.",
+"In the corners of the hall there is smothered laughter that nobody explains. At intervals the beautiful mouth says “Ach! Ach!” — to him, to the candles, to nothing.",
+"He stands apart"+(S.f.siegmund?" with Siegmund":"")+" before midnight, with an odd relief and an odd shame, thinking, of all things, of a warmer hand."
+);},
+choices:function(S){return has(S,"ballglass")?[
+{t:"Ask the professor’s leave to visit Olimpia — tomorrow, and daily",canon:true,go:"s19"},
+{t:"Walk home first with Siegmund, and hear what the company was whispering",go:"s19",set:{siegmund:true},mark:"whispers"}
+]:( function(){var c=[
+{t:"The town may laugh without you — write home instead, a long letter",go:"s19b"}];
+if(S.f.siegmund)c.push({t:"Watch the professor’s house with Siegmund until you understand what is wrong in it",go:"c1"});
+return c;})();}},
+
+s19:{canon:true,date:"April: the courtship",
+text:function(S){return P(
+(has(S,"whispers")?"What the company whispered — <i>wax-face, wooden step, a machine’s time</i> — he has heard and filed away as envy. ":"")+
+"He goes daily. He sits beside Olimpia for hours and reads her everything he has ever written — poems, visions, romances, a daily-growing heap of aimless sonnets — and she does not knit, does not yawn, never looks out of the window; she gazes at him unmoving, hour on hour, and says at intervals, “Ach! Ach!” — in which he hears profundity. The account is blunt: “Nathanael had completely forgotten that there was a Clara in the world.”",
+"It is Siegmund who finally says it, gently, hating to: how did so sensible a fellow lose his head over “that Miss Wax-face — that wooden doll across there”? Her step is clockwork; her singing keeps a machine’s insensible time; “we felt quite afraid of this Olimpia.” And then, seeing it is useless: “You may rely upon me, if all — no, I can’t say any more.”",
+"The proffered hand waits."
+);},
+choices:function(S){var c=[
+{t:"Shake Siegmund’s hand; pity the cold prosaic fellow; go back to her",canon:true,go:"s20"}];
+if(S.f.siegmund)c.push({t:"Put Olimpia, in her own parlour, to a proof no living mind could fail",go:"c1"});
+c.push({t:"Go home instead, and read Clara’s letters until dawn",go:"s19b"});
+return c;}},
+
+s19b:{date:"spring: the long way back",
+text:function(S){return P(
+"The visits"+(S.f.glass?" across the street":" that never began")+" end without a scene. The term runs out in lecture-rooms and long walks; the letters home grow longer and easier.",
+"Before he leaves G—— the town hands him its parting gift of gossip: a scandal in the professor’s house — a fight overheard, the household broken up overnight, and the story, told first laughing and then not laughing, that the guarded daughter Olimpia was no daughter at all but <i>an automaton of wood and clockwork</i>, passed off on living society. Spalanzani leaves the university. Nathanael reads the report twice, folds it away, and finds — testing the thought like a man testing ice — that it bears his weight.",
+"On the last morning his road crosses the river bridge."
+);},
+choices:function(S){var c=[];
+if(S.f.glass){c.push({t:"Drop Coppola’s perspective glass from the bridge, and watch the river close over it",go:"s23b",set:{glass:false}});
+c.push({t:"Keep Coppola’s glass — three ducats are three ducats, and glass is only glass",go:"s23b"});}
+else{c.push({t:"Write ahead: you are coming home for good",go:"s23b"});
+c.push({t:"Let the term run out quietly, announcing nothing",go:"s23b",mark:"quiet_return"});}
+return c;}},
+
+s20:{canon:true,date:"the day of the ring",setpiece:true,
+text:function(S){return P(
+"Spalanzani smiles on the intimacy and speaks of his daughter’s “perfectly free choice.” So: a betrothal. Nathanael digs in his desk for the ring his mother gave him at parting; Clara’s letters come up with it, and Lothair’s, unanswered these many weeks — he throws them aside, finds the ring, pockets it, and runs across the street.",
+"On Spalanzani’s stair he hears it: furniture cracking against doors, and two voices in fury — “Leave hold — leave hold — you monster!” — “I made the eyes!” — “I the clock-work!” — the professor’s voice, and the harsh voice of Coppola the optician. He bursts in. The two have a female figure between them, one at the shoulders, one at the feet, wrenching it back and forth for possession. It is Olimpia.",
+"Coppola wins her with a great twist, strikes the professor down with <i>the body itself</i>, and is gone down the stairs laughing, the figure’s feet knocking wooden on every step. Where the face turned toward Nathanael there are no eyes: black holes in pallid wax. And from the floor, bleeding among his smashed retorts, Spalanzani flings something soft at Nathanael’s breast — a pair of eyes — “there are the eyes — stolen your eyes — after him — fetch me back Olimpia —”",
+"Madness, the account says, dug her burning talons into him then."
+);},
+choices:function(S){return [
+{t:"Fly at the professor’s throat: “Spin round, wooden doll! Spin round!”",canon:true,go:"s21"},
+{t:"Fly down the stairs after Coppola and the broken thing on his shoulder",go:"s21",mark:"chased"}
+];}},
+
+s21:{canon:true,date:"the summer",short:true,
+text:function(S){return P(
+"Of the whole summer the file keeps one line, in the hand of the university surgeon: “raging with the harrowing violence of madness, he was taken away to the madhouse.”"
+);},
+choices:function(S){return [
+{t:"Scream against the walls until the walls answer",canon:true,go:"s22"},
+{t:"Let the dark close over you like water",go:"s22",mark:"sank"}
+];}},
+
+s22:{canon:true,date:"autumn: an awakening",
+text:function(S){return S.f.clara?P(
+"He wakes as if out of “the sleep of death,” warm, in his own bed, in his mother’s house. Clara is bending over him — “now we have you again; now you are cured of your grievous illness; now you are mine again” — and behind her his mother, and Lothair; and by the second day Siegmund, who had stood by him through the worst. Every trace of the madness is gone.",
+"Good fortune, of the homeliest kind, has visited the house meanwhile: a niggardly old uncle, of whom nobody had hoped anything, has died and left the mother a considerable sum and a small estate near the town. There they will all move — mother, Lothair, Clara and Nathanael, who is now to marry her at last. Nobody says <i>Olimpia</i>. Nobody says <i>Coppelius</i>.",
+"He is gentler and more childlike than they have ever known him."
+):P(
+"He wakes as if out of “the sleep of death” — among strangers, in the convalescent wing of the madhouse, to whitewash and a barred garden. The madness has burned itself out; the doctors pronounce him mild.",
+"Siegmund comes, twice, and then the term takes him elsewhere. From home there is a letter in Lothair’s hand, formal and kind at arm’s length: the family’s circumstances are mended — an old uncle’s legacy — and his keep is provided for. Of Clara it says that she is well. It does not say she will come, and she does not come; some words, said over a garden wall or across a rapier, keep their own accounts.",
+"Provision is made. That is the phrase the file uses. Provision is made for him."
+);},
+choices:function(S){return S.f.clara?[
+{t:"Be gentle; speak of the estate, and of the wedding",canon:true,go:"s23"},
+{t:"Ask, once, quietly, what became of the things you carried",go:"s23",mark:"asked"}
+]:[
+{t:"Take the rooms in G—— that the legacy pays for",go:"end:window"},
+{t:"Ask Siegmund, before he goes, to write to Clara for you",go:"end:window",mark:"begged"}
+];}},
+
+s23:{canon:true,date:"the move, at noon",
+text:function(S){return P(
+"The day of the move: purchases in the market-place at noon, the cart gone ahead, the town all mild autumn light. The lofty tower of the town-house throws its giant shadow across the square."+(has(S,"asked")?" (His effects, someone had mentioned, were returned from G—— entire; nobody had thought to sift a sick man’s pockets.)":""),
+"“Come,” says Clara, “let us go up to the top once more and have a look at the distant hills.” The mother walks on ahead to the new home with the servant-girl; Lothair, not minded to climb so many steps, waits below.",
+"So much is settled, then: only the stairs remain."
+);},
+choices:function(S){return [
+{t:"Climb the tower with Clara",canon:true,go:function(S){return S.f.glass?"e1":"t_bush";}},
+{t:"Plead the many steps; wait below with Lothair, and let Clara look at her hills from the ground",go:"end:quiet"}
+];}},
+
+s23b:{date:"summer: home for good",
+text:function(S){return S.f.clara?P(
+"The degree is taken without honours and without regret, the trunk corded, the road home a road and nothing more. At home, fortune of the homeliest kind: a niggardly old uncle, of whom nobody had hoped anything, has died and left the mother a considerable sum and a small estate near the town. The wedding — his and Clara’s, so long betrothed — is set for after the harvest.",
+"On a bright noon, purchases in the market-place; the lofty tower of the town-house throws its giant shadow across the square. “Come,” says Clara, “let us go up to the top once more and have a look at the distant hills.” Lothair, not minded to climb so many steps, waits below."
+):P(
+"The degree is taken without honours and without regret, and he comes home for good — to a house kind and careful with him. An old uncle’s legacy has mended the family’s circumstances; there is a small estate near the town now, and room in it for a quiet man. The wedding that was once understood is not spoken of; Clara is friendly, and distant, and often out; some words, said in a garden once, keep their own accounts.",
+"On a bright noon he crosses the market-place alone, and the lofty tower of the town-house throws its giant shadow over him, and he thinks: the distant hills. One climbs for the view."
+);},
+choices:function(S){return S.f.clara?[
+{t:"Climb the tower with Clara",go:function(S){return S.f.glass?"e1":"t_bush";}},
+{t:"Plead the many steps; keep to the ground and the mild day",go:"end:quiet"}
+]:[
+{t:"Climb the tower alone, for the view",go:function(S){return S.f.glass?"e1solo":"t_bush";}},
+{t:"Turn home along the shady side of the square",go:"end:quiet"}
+];}},
+
+t_bush:{date:"the tower gallery",
+text:function(S){return P(
+(S.f.clara?"They stand arm-in-arm on the topmost gallery":"He stands on the topmost gallery, alone")+", and gaze out into the sweet-scented wooded landscape, beyond which the blue hills rise up “like a giant’s city.”",
+(S.f.clara?"“Oh! do look at that strange little grey bush,” says Clara, “it looks as if it were actually walking towards us.” He looks — with his eyes, which are his own and all he has. A grey bush, walking in the wind, the way bushes walk. “Yes,” he says. “The wind is getting up.”":"Far off on the white road a strange little grey bush seems to be walking towards the town. He looks at it — with his eyes, which are his own and all he has — until it is what it is: a bush, walking in the wind, the way bushes walk."),
+"The bells below strike the quarter. Nothing on the gallery wants anything of him."
+);},
+choices:function(S){return [
+{t:"Go down the many steps, to the carriage and the years",go:"end:quiet"},
+{t:"Stay for one more turn of the gallery"+(S.f.clara?", her hand in yours":"")+", then go down",go:"end:quiet",mark:"lingered_tower"}
+];}},
+
+/* ============ THE CANON ENDGAME ============ */
+
+e1:{canon:true,deep:true,date:"the tower gallery",
+text:function(S){return P(
+"There the two lovers stood arm-in-arm on the topmost gallery of the tower, and gazed out into the sweet-scented wooded landscape, beyond which the blue hills rose up like a giant’s city.",
+"“Oh! do look at that strange little grey bush,” said Clara, “it looks as if it were actually walking towards us.” Mechanically he put his hand into his side-pocket; he found Coppola’s perspective; he looked for the bush — Clara stood in front of the glass.",
+"Then a convulsive thrill shot through his pulse and veins; pale as a corpse, he fixed his staring eyes upon her; but soon they began to roll, and a fiery current flashed and sparkled in them, and he yelled fearfully, like a hunted animal; leaping up high in the air and laughing horribly at the same time, he began to shout in a piercing voice, “Spin round, wooden doll! Spin round, wooden doll!”"
+);},
+choices:function(S){return [{t:"(the wooden doll spins)",bare:true,canon:true,go:"e2"}];}},
+
+e2:{canon:true,deep:true,date:"the gallery rail",
+text:function(S){return P(
+"With the strength of a giant he laid hold upon Clara and tried to hurl her over, but in an agony of despair she clutched fast hold of the railing that went round the gallery.",
+"Lothair heard the madman raging and Clara’s scream of terror: a fearful presentiment flashed across his mind. He ran up the steps; the door of the second flight was locked. Clara’s scream for help rang out more loudly. Mad with rage and fear, he threw himself against the door, which at length gave way. “Help! save me! save me!” — and her voice died away in the air. The door to the gallery was also locked. Despair gave him the strength of a giant; he burst the door off its hinges. Good God! there was Clara in the grasp of the madman Nathanael, hanging over the gallery in the air; she only held to the iron bar with one hand. Quick as lightning, Lothair seized his sister and pulled her back, at the same time dealing the madman a blow in the face with his doubled fist, which sent him reeling backwards, forcing him to let go his victim.",
+"Lothair ran down with his insensible sister in his arms. She was saved."
+);},
+choices:function(S){return [{t:"(the crowd gathers in the market-place below)",bare:true,canon:true,go:"e3"}];}},
+
+e3:{canon:true,deep:true,date:"the market-place below",
+text:function(S){return P(
+"But Nathanael ran round and round the gallery, leaping up in the air and shouting, “Spin round, fire-wheel! Spin round, fire-wheel!” The people heard the wild shouting, and a crowd began to gather. In the midst of them towered the advocate Coppelius — the Sand-man of his childhood, the huge grey-browed man of the hearth and the black smocks, or a man exactly like him — who had only just arrived in the town, and had gone straight to the market-place.",
+"Some were going up to overpower and take charge of the madman, but Coppelius laughed and said, “Ha! ha! wait a bit; he’ll come down of his own accord;” and he stood gazing upwards along with the rest. All at once Nathanael stopped as if spell-bound; he bent down over the railing, and perceived Coppelius. With a piercing scream, “Ha! foine oyes! foine oyes!” he leapt over.",
+"When Nathanael lay on the stone pavement with a broken head, Coppelius had disappeared in the crush and confusion."
+);},
+choices:function(S){return [{t:"(finis)",bare:true,canon:true,go:"end:fire"}];}},
+
+e1solo:{deep:true,date:"the tower gallery, alone",
+text:function(S){return P(
+"He stands on the topmost gallery, alone, and the wooded landscape runs sweet-scented to the blue hills. Mechanically — the word is the book’s, and the editor can better neither the word nor the fact — he puts his hand into his side-pocket, and finds Coppola’s perspective, kept these many months for three ducats’ worth of proof that the man was only a tradesman.",
+"He sweeps the hills with it; then the white road; then, idly, the market-place below. The little crowd of noon stands sharp and near in the glass — and in the midst of them, looking up, filling the lens as if he had been waiting under it, a large broad-shouldered figure with grey bushy brows.",
+"The old voice comes up the tower as clear as if it spoke at his ear: <i>wait a bit; he’ll come down of his own accord.</i>"
+);},
+choices:function(S){return [{t:"(he leans out, to see better)",bare:true,go:"end:fire",mark:"solo"}];}},
+
+/* ============ CORRIDOR A — THE JOURNEYMAN ============ */
+
+a1:{thin:true,date:"that same evening, from the town gate",
+text:function(S){return P(
+"Here the spine of the file breaks, and the editor holds what he holds: a carrier’s deposition, one page of a travel-diary, and conjecture. <span class=\"gap\">Of this whole pursuit, understand, the book knows nothing.</span>",
+"He took his hat, his purse and his father’s name, and went down the stairs three at a time. Coppola did not hurry: out through the town gate southward in the failing light, the pack of glasses chiming on his back like small bells — never once looking round, which was somehow worse. On the desk in the room behind, under the compendium: a letter to Clara, unfinished, unposted."
+);},
+choices:function(S){return [
+{t:"Keep the optician in sight; spend nothing; sleep nowhere",go:"a2"},
+{t:"Hail him at the gate itself: what was Coppelius to my father?",go:"a2",mark:"hailed"}
+];}},
+
+a2:{thin:true,date:"from a way-bill · Munich",short:true,
+text:function(S){return P(
+(has(S,"hailed")?"What answer the optician gave at the gate, if any, is not in the file. ":"")+
+"A diligence way-bill, Munich: “one place, outside, to the young German who asked after the oculists of Turin.” Then on foot; the file says nothing for a month."
+);},
+choices:function(S){return [
+{t:"South, over the passes",go:"a3"},
+{t:"South, though the money is done",go:"a3",mark:"penniless"}
+];}},
+
+a3:{thin:true,date:"Turin, in the spring",
+text:function(S){return P(
+"Hunger teaches its plain lessons"+(has(S,"penniless")?", and taught them early on this road":"")+". He finds the workshop by the smell of pitch and polishing-rouge: a low room of grinding-wheels off a courtyard, and in the doorway, wiping his hands, unsurprised — Coppola. “So. Ye come for oyes after all.”",
+"No triumph in it; a tradesman’s satisfaction; a bench pointed at; bread set on the sill. The apprentice-book of the shop for that year carries, between two Piedmontese names, one German name in careful ink. The editor has had a sight of the hand. It is Nathanael’s, and it does not shake."
+);},
+choices:function(S){return [
+{t:"Take the bench; learn to grind glass",go:"a4"},
+{t:"Take the bench — and swear privately that this is reconnaissance, not surrender",go:"a4",mark:"recon"}
+];}},
+
+a4:{thin:true,date:"the months at the wheel",
+text:function(S){return P(
+"Glass, it turns out, is honest. Grind it true and it is true; there is no dark power that survives a good polishing, and no poem either. His mind grows quiet at the wheel in a way that verse never made it"+(has(S,"recon")?"; the private oath of reconnaissance is still in force, he tells himself, on Sundays":"")+".",
+"Evenings, he begins a letter — <i>My Clara</i> — and the German goes nowhere south of the salutation. There is nothing in the shop she could forgive him for, and nothing he knows how to explain: only that the man who frightened him has turned out to have a trade, and that the trade has turned out to have room in it for the frightened."
+);},
+choices:function(S){return [
+{t:"Send the letter as it stands: two words and a blot",go:"a5",mark:"sent"},
+{t:"Burn it — the man who wrote “My Clara” has no address now",go:"a5",mark:"burnt"}
+];}},
+
+a5:{thin:true,date:"the back room",
+text:function(S){return P(
+"There is a back room. He has known of it a year before he is shown it: shelf on shelf, bedded in fine white sand, the eyes — enamel and crystal, blue, brown, black-and-bright. For the dolls, says the master; for the surgeons, says the master; for whom else, he does not say. The irises are painted from life, each one from somebody.",
+"Coppola watches him look, the way masters watch apprentices at the edge of the last art. “Foine oyes,” says the old voice — without any accent of horror at all: a man naming his trade."
+);},
+choices:function(S){return [
+{t:"Look away; grind lenses; remain a journeyman of the outer room",go:"end:journeyman",mark:"outer"},
+{t:"Learn the last art: the making of eyes",go:"end:journeyman",mark:"lastart"}
+];}},
+
+/* ============ CORRIDOR B — THE SCHOOLMASTER ============ */
+
+b1:{thin:true,date:"the day the coach left without him",
+text:function(S){return P(
+"<span class=\"gap\">From here the book has no road, and the file thins accordingly: parish registers, a school ledger, and what Lothair chose to remember aloud.</span>",
+"The coach for G—— left at first light with an empty seat. He stood in his mother’s parlour and said it plainly: he would not go back — the university, the compendium, the room in the strange town could go to some other man. His mother wept about the money until Lothair, who dealt in figures, found the sum: the tutor’s post at the town school, vacant since Michaelmas, would carry a married man. Barely.",
+"Clara said nothing for a long moment — the editor has this from Lothair, who never forgot it — and then: “Barely is enough.”"
+);},
+choices:function(S){return [
+{t:"Take the post before the town can change its mind",go:"b2"},
+{t:"Write first to G—— for your books and instruments",go:"b2",mark:"books"}
+];}},
+
+b2:{thin:true,date:"winter: the school",
+text:function(S){return P(
+"Latin declensions, sums, chilblained boys"+(has(S,"books")?", his own instruments ranged on the schoolroom shelf":"")+". He discovers — nobody more surprised than he — a talent for it: the same voice that once read mystical books over the breakfast coffee now makes ten-year-olds sit still for the Romans. Evenings, Clara; Sundays, Lothair and cards; and his poems, when they come at all, come small and clear — frost-ferns on the schoolroom glass, that kind of thing.",
+"Once — once only — he wrote the word <i>Coppelius</i> on the slate, and looked at it until the letters were only letters, and wiped them off."
+);},
+choices:function(S){return [
+{t:"Wipe the slate clean; set the boys a fair copy",go:"b3"},
+{t:"Keep one page about the Sand-man in the desk drawer — for honesty’s sake",go:"b3",mark:"drawerpage"}
+];}},
+
+b3:{thin:true,date:"three Sundays",short:true,
+text:function(S){return P(
+"Read three Sundays running in the town church: Nathanael, schoolmaster of this parish, to Clara, orphan, of this town. Nobody objected. Somewhere far to the south, presumably, an optician went on selling glasses."
+);},
+choices:function(S){return [
+{t:"Marry her in the morning",go:"b4"},
+{t:"Marry her in the morning — and burn the drawer-page the night before",go:"b4",mark:"burnedpage"}
+];}},
+
+b4:{thin:true,date:"a noon in spring",
+text:function(S){return P(
+"A knock at their own door at noon, and a voice on the step offering weather-glasses cheap. The file preserves the moment only because he told Lothair of it, years after: how the kitchen went quiet around him; how the word <i>downstairs</i> presented itself of its own accord, as if it had been waiting since a certain 30th of October — the day, he had written once, when a hawker of barometers first stood in his student room and everything began.",
+"A door is a small thing. It can be opened, or not."
+);},
+choices:function(S){return [
+{t:"Open the door yourself, and look the hawker in the face",go:"b5",mark:"opened"},
+{t:"Call through the wood — nothing wanted here — and hold the latch",go:"b5",mark:"latched"}
+];}},
+
+b5:{thin:true,date:"the ninth hour",
+text:function(S){return P(
+(has(S,"opened")?"It was a stranger: young, brown-eyed, Saxon by his speech, with honest bad barometers. He sold nothing and went away of his own accord; and the schoolmaster stood in the doorway a while, feeling the spring sun, almost disappointed. ":"The steps went away down the lane; through the kitchen window they watched the pack of glasses glitter out of sight; and if a chance had been missed, or a mercy granted, the file does not say which. "),
+"Years now. At the stroke of nine each evening — his wife has learned not to remark it — the schoolmaster stands a moment on the dark landing, listening to nothing coming up the stairs. Nothing ever comes. That is what he listens to.",
+"A child is expected at midsummer. He has already, privately, against all pedagogy, settled the nursery rule: in this house there will be no Sand-man. Sleepy children will be only sleepy."
+);},
+choices:function(S){return [
+{t:"Stand a moment longer in the dark, to be sure",go:"end:schoolmaster",mark:"landing"},
+{t:"Go in to the lamp, where Clara is",go:"end:schoolmaster"}
+];}},
+
+/* ============ CORRIDOR C — THE ADVOCATE’S EYES ============ */
+
+c1:{thin:true,date:"the proof",
+text:function(S){return P(
+"He owes the thought to Siegmund, and brings Siegmund to the proof. In Spalanzani’s parlour — the visit contrived on a civil pretext — he puts to Olimpia, the professor’s beautiful guarded daughter, the one thing no listening machine can answer: a question about himself, small and particular, that a living mind would contradict. The beautiful mouth says, “Ach! Ach!”",
+"The room ticks. Not the clock: the girl. And Siegmund, pale, from behind her chair, in the flat voice of a man minding his hands: <i>between the shoulders, under the silk — a key-hole, brother. Wards and all.</i>",
+"<span class=\"gap\">The file, which was letters once, is depositions from here on.</span>"
+);},
+choices:function(S){return [
+{t:"Go this hour to the magistrates, both of you",go:"c2"},
+{t:"Go first to Spalanzani’s study, and let the professor explain himself",go:"c2",mark:"warned"}
+];}},
+
+c2:{thin:true,date:"the deposition",
+text:function(S){return P(
+(has(S,"warned")?"The professor explained nothing; he offered — in this order — money, indignation, and the observation that the door was behind them. The magistrates heard the rest. ":"")+
+"The deposition survives entire: <i>that the person exhibited as Olimpia Spalanzani is no person, but an automaton of wood and clock-work; that her exhibition at concerts, in tea-circles and at a ball, as a living daughter, constitutes a fraud upon human society.</i> The clerk stopped twice to sharpen his pen, and once to laugh, and by the end was not laughing.",
+"Sworn and signed by two students of this university, of whom the file names the first: Nathanael, the advocate’s son."
+);},
+choices:function(S){return [
+{t:"Sign it in a firm hand",go:"c3"},
+{t:"Sign it, and add beneath: sought also, one COPPOLA, optician, dealer in eyes",go:"c3",mark:"named_coppola"}
+];}},
+
+c3:{thin:true,date:"Friday",short:true,
+text:function(S){return P(
+"Spalanzani’s house stood empty by Friday. Chairs, retorts, a woman’s wardrobe; and on the study floor, face up, a pair of eyes that nobody would pick up."
+);},
+choices:function(S){return [
+{t:"Have the eyes taken up for evidence",go:"c4",mark:"evidence"},
+{t:"Leave them lying where they look",go:"c4"}
+];}},
+
+c4:{thin:true,date:"the town, afterward",
+text:function(S){return P(
+"The town, having laughed at the acute students for a week, stopped laughing. “An absurd mistrust of human figures began to prevail”: lovers required of their mistresses that they sing a little out of time, that they knit, that they yawn — above all that they <i>speak</i>, now and then, in a way that proved some thinking behind it. Several engagements failed the examination. At the tea-tables everybody yawned prodigiously and nobody sneezed, the sneeze having been given out as the winding-up of concealed clock-work.",
+"Nathanael, who had unmasked the doll, was toasted, quoted, and quietly avoided. The court, for its part, had a warrant"+(has(S,"named_coppola")?" — Spalanzani, and Coppola, dealer in eyes —":"")+" and not one officer who could swear to the optician’s face. Not one man in the town could, in fact. Except one."
+);},
+choices:function(S){return [
+{t:"Take the warrant and the road-money",go:"c5"},
+{t:"Take them — and your father’s name for company",go:"c5",mark:"fathersname"}
+];}},
+
+c5:{thin:true,date:"autumn: the road to Dresden",
+text:function(S){return P(
+"Autumn on the roads, optician to optician, fair to fair: a season of lenses, of hawkers’ packs opened on inn tables, of faces that were never quite the face. <span class=\"gap\">Expenses in the file: boot-leather, a greatcoat, candles. No letters home are preserved, if any were written.</span>",
+"In Dresden at last, in a lane off the market, a shop of lenses with no name over the door — and inside the window, spectacles arranged in rows, all facing outward, all watching the street. The proprietor, say the neighbours, is a German from somewhere east; large; grey about the brows; an advocate once, they believe, before he took up glass."
+);},
+choices:function(S){return [
+{t:"Go in at dusk, the warrant flat in your coat",go:"c6"},
+{t:"Watch the door three days first, and note who comes out",go:"c6",mark:"watched"}
+];}},
+
+c6:{thin:true,date:"a shop in a lane, at dusk",
+text:function(S){return P(
+(has(S,"watched")?"Three days: nobody came out. Trade, evidently, comes to the shop. ":"")+
+"Here the file fails almost entirely, and the editor gives the fragments as they stand. A counter. Lamplight on a hundred lenses. A large broad-shouldered man with an immense head, who does not ask what is wanted — the grey brows, the greenish cat’s eyes of the study, of the hearth, of the coffin-side; the advocate Coppelius of his childhood, the Sand-man himself, or a man exactly like him, aged not at all in a lifetime.",
+"He looks at Nathanael a long, comfortable moment, and says, grinding his teeth pleasantly: “The little brute has grown.”",
+"And then, pushing across the counter a pair of spectacles, cold and clean: “See like me, and you will stop being afraid.”"
+);},
+choices:function(S){return [
+{t:"Lay the warrant on the counter between you",go:"end:advocate",mark:"warrant_laid"},
+{t:"Put on the spectacles",go:"end:advocate",mark:"spectacles_on"}
+];}}
+};
+
+/* ============ ENDINGS ============ */
+
+var ENDINGS={
+fire:{name:"THE FIRE-WHEEL",
+verdict:function(S){if(has(S,"solo"))return "You died a page early, but on the right pavement.";return S.dep.length?"You died on Hoffmann’s schedule, by roads he never wrote.":"You died on Hoffmann’s schedule.";},
+text:function(S){return P(
+has(S,"solo")?
+"The fall is not in the book — the book had appointed Clara’s eyes for the lens, and a scene you did not keep. But the pavement is the same pavement, and the crowd the same crowd, and when they looked for the large grey-browed man who had bid them wait a bit, he had disappeared in the crush and confusion.":
+"The book closes over the pavement as the crowd does, and gives its last page not to Nathanael but to the living:",
+"“Several years afterwards it was reported that, outside the door of a pretty country house in a remote district, Clara had been seen sitting hand in hand with a pleasant gentleman, whilst two bright boys were playing at her feet. From this it may be concluded that she eventually found that quiet domestic happiness which her cheerful, blithesome character required, and which Nathanael, with his tempest-tossed soul, could never have been able to give her.”"
+);}},
+quiet:{name:"THE QUIET HOUSE",
+verdict:function(S){return S.f.clara?"You outlived your author.":"You outlived your author; the happy ending happened a garden away.";},
+text:function(S){return S.f.clara?P(
+"Several years afterwards, gracious reader — and the editor sets it down with a full pen and a fuller heart — outside the door of a pretty country house in a remote district, Clara was seen sitting hand in hand with a pleasant gentleman, whilst two bright boys played at her feet; and the pleasant gentleman — wipe your eyes, reader, the editor has wiped his — was Nathanael.",
+"The coffee never boils over. "+(has(S,"barometer")?"The barometer in the hall — the very one bought of a hawker on a certain 30th of October — stands at <i>set fair</i>, year in, year out. ":"The barometer in the hall stands at <i>set fair</i>, year in, year out. ")+"Nobody in that house reads mystical books before breakfast; and if a step is heard on the stair of an evening at nine, it is Lothair, come for cards.",
+S.f.glass?"In a locked drawer of the writing-desk there is a small optician’s glass which nobody uses. Some winter evenings the master of the house takes it out, and turns it in his hand, unraised, and puts it back. That is all it does. That is all, gracious reader, it ever did.":"Eyes, the nurse said, can be stolen; but eyes, reader, are for weeping with, and his are dry, and his own."
+):P(
+"Several years afterwards, outside the door of a pretty country house in a remote district, Clara was seen sitting hand in hand with a pleasant gentleman, whilst two bright boys played at her feet. The gentleman was not Nathanael; some words, said once across a garden, kept their accounts to the last.",
+"But the file’s final leaf is his, and it is a quiet one: the estate, the mild seasons, his mother’s long content; a shelf of small clear poems, privately printed; his eyes his own to the end. The editor has stood in that district in October and can report that the evenings there are only evenings, and the stairs only stairs.",
+S.f.glass?"The optician’s glass was found among his effects, wrapped in a page of verse, unraised for thirty years.":""
+);}},
+window:{name:"THE MAN AT THE WINDOW",
+verdict:function(S){return "You kept your eyes and lost the use of them.";},
+text:function(S){return P(
+"The legacy pays for two rooms in G——, an attendant on Tuesdays, and a subscription to the lectures he does not attend. He is quiet; gives no trouble; is pointed out, sometimes, to new students, who are told the story wrong.",
+(has(S,"begged")?"Siegmund wrote to Clara, as asked. If an answer came, it is not preserved. ":"")+
+"His window faces a house with a curtained upper room, and he sits at it the day long, hands folded on the sill, in perfect proportion, looking out — so the attendant’s report runs — “at nothing, with great attention.” Among his effects there is "+(S.f.glass?"a small optician’s spy-glass, which he does not use; he only holds it.":"no instrument of any kind; he asked once after a glass he had owned, and being told there was none, nodded, as at a thing confirmed."),
+"The file ends with the rent, paid quarterly, in advance, for years."
+);}},
+journeyman:{name:"THE JOURNEYMAN",
+verdict:function(S){return "You left the book by the door the Sand-man came in at.";},
+text:function(S){return P(
+"Of the Piedmont years the file holds: a workshop ledger; "+(has(S,"sent")?"one letter northward — two words and a blot — to which no answer is preserved;":"three letters northward begun and burned, known only by their ashes in a grate-sweeping the diary mentions;")+" and a bill of lading, Genoa, for a crate marked <i>OCCHI</i> — eyes.",
+"The editor is told that in the shops of Turin there worked, until late in the century, a grey German master famous for the naturalness — the men of the trade said the <i>mercy</i> — of his "+(has(S,"lastart")?"glass eyes, each iris painted from somebody":"lenses, which brought things out clearly, and no more than clearly")+"; that he never married; that he was heard of an evening reciting German verses to the grinding-wheel.",
+"The file ends with sand: a packet of it, fine and white, such as is used for polishing glass. Or for other things."
+);}},
+schoolmaster:{name:"THE SCHOOLMASTER",
+verdict:function(S){return "You escaped the novel on the road home.";},
+text:function(S){return P(
+"The school prospers modestly; the marriage more than modestly; the child comes at midsummer, and then another. The parish register, which is all the file that remains, records promotions, christenings, a prize-day speech “much approved.”",
+(has(S,"landing")?"He stands his moment on the landing to the last, every evening at nine; and every evening, nothing comes up the stairs, and he goes in to the lamp with the look of a man whose accounts balance. ":"")+
+"The book, which needed him in G——, went on without a hero, and is not spoken of in that house. Whether the grey hawkers of this world forgot the address, or called once at noon and found the door held shut, the editor cannot say. He can say that no one in that town was ever put to bed with the Sand-man; sleepy children there were only sleepy; and eyes were for reading with, by lamplight, late."
+);}},
+advocate:{name:"THE ADVOCATE’S EYES",
+verdict:function(S){return "You found the Sand-man keeping shop; he found you a customer.";},
+text:function(S){return has(S,"spectacles_on")?P(
+"The warrant was found in the coat, folded, unserved. The coat was found on its hook in the Dresden shop, where the young German assistant — quiet, careful of hand, said by the neighbours to be the old man’s countryman or kinsman — hung it every morning for years.",
+"The file’s last leaf is a page of the shop’s order-book: lenses, spectacles, and certain finer wares, entered in two hands. The second hand is small, and even, and does not shake; the editor knows it well, having received three letters in it once, long ago, from a student frightened of a hawker.",
+"They fit, was all he ever wrote of the spectacles. They fit, and one stops being afraid."
+):P(
+"The warrant came back to the magistrates by the winter post, annotated in the Dresden clerk’s hand: <i>the person named not found at this address; the shop in question untenanted these nine years, as the neighbours attest.</i> He had stood in it at dusk among the lamplit lenses; the large man had ground his teeth pleasantly and called him a grown little brute; the counter had been real under the paper. The neighbours attest otherwise. Nine years, they say. Empty.",
+"Nathanael carried the returned warrant about with him for the rest of a long, employable, respected life — clerk to the courts, then advocate, like his father’s friend; like, he did not say, whom else. He prosecuted frauds. He was good at it. He was never once, in forty years, entirely sure what the law had hold of, and it kept him gentle with the accused.",
+"The file ends with his eyes, which he kept, and used, and shut at the last of his own accord."
+);}}
+};
+
+/* ============ ENGINE ============ */
+
+var CANON_IDS=Object.keys(NODES).filter(function(k){return NODES[k].canon;});
+var CANON_TOTAL=CANON_IDS.length;
+
+var GAME={nodes:NODES,endings:ENDINGS,canonTotal:CANON_TOTAL,newState:newState};
+if(typeof module!=="undefined"&&module.exports){module.exports=GAME;}
+
+if(typeof document!=="undefined"){(function(){
+var S=null,KEY="sandman-file-v1";
+var stage=document.getElementById("stage");
+
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function loadSave(){try{var x=localStorage.getItem(KEY);return x?JSON.parse(x):null;}catch(e){return null;}}
+function clearSave(){try{localStorage.removeItem(KEY);}catch(e){}}
+function esc(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;");}
+
+function title(){
+document.body.className="";
+var resume=loadSave();
+var h="<div class='lens'></div>"
++"<h1>The Sand-Man</h1>"
++"<p class='sub'>a game of letters, after —</p>"
++"<p class='cred'>E.&thinsp;T.&thinsp;A. Hoffmann, <i>Der Sandmann</i> (1816)<br>englished by J.&thinsp;T. Bealby (New York, 1885)</p>"
++"<div id='text'>"
++"<p>Nobody, gracious reader, asked me for the history of my poor friend the student Nathanael; but I am of that remarkable class of authors who, carrying such a thing about in the breast, feel the whole world plucking at their sleeve for it. I could never find a beginning worthy of the matter — I tried three and burned them — and so I give you instead the file itself: the three letters my friend Lothair communicated to me, the leaves that gathered round them, and what I have stitched between.</p>"
++"<p>In the printed book my friend’s history runs one way, and downhill, to a stone pavement. In this file it need not.</p>"
++"<p>The reader of a book follows; the reader of this book chooses.</p>"
++"</div><ul id='choices'>"
++"<li><button class='choice' onclick='window.__begin()'>Open the file</button></li>"
++(resume&&resume.node&&NODES[resume.node]?"<li><button class='choice' onclick='window.__resume()'>Return to the leaf where you left off</button></li>":"")
++"</ul>";
+stage.innerHTML=h;window.scrollTo(0,0);}
+
+window.__begin=function(){S=newState();clearSave();go("s1");};
+window.__resume=function(){S=loadSave();if(!S||!NODES[S.node]){S=newState();}render(S.node);};
+window.__again=function(){clearSave();S=null;title();};
+
+function record(node,choice,targetId){
+if(!node.canon||choice.canon)return;
+var isEnd=targetId.indexOf("end:")===0;
+var tgt=isEnd?null:NODES[targetId];
+var entry={at:node.date,did:choice.t};
+if(!isEnd&&tgt&&tgt.canon){S.stray.push(entry);}else{S.dep.push(entry);}}
+
+window.__pick=function(i){
+var node=NODES[S.node];
+var cs=node.choices(S);
+var c=cs[i];if(!c)return;
+if(c.set)for(var k in c.set)S.f[k]=c.set[k];
+if(c.mark&&S.m.indexOf(c.mark)<0)S.m.push(c.mark);
+var target=(typeof c.go==="function")?c.go(S):c.go;
+record(node,c,target);
+if(target.indexOf("end:")===0){finis(target.slice(4));return;}
+go(target);};
+
+function go(id){
+if(NODES[id].canon&&S.seen.indexOf(id)<0)S.seen.push(id);
+S.node=id;save();render(id);}
+
+function render(id){
+var n=NODES[id];
+document.body.className=n.deep?"deep":(id==="s20"||id==="s21"||id==="s22"||id==="s23"?"dusk":(n.thin?"thin":""));
+var h="<p class='runhead'>The Sand-Man · a game of letters</p>"
++"<div class='lens'></div>"
++"<p class='date'>"+esc(n.date)+"</p>"
++"<div id='text'>"+n.text(S)+"</div>"
++"<ul id='choices'>";
+var cs=n.choices(S);
+for(var i=0;i<cs.length;i++){
+h+="<li><button class='choice"+(cs[i].bare?" bare":"")+"' onclick='window.__pick("+i+")'>"+esc(cs[i].t)+"</button></li>";}
+h+="</ul>";
+stage.innerHTML=h;window.scrollTo(0,0);}
+
+function finis(eid){
+var e=ENDINGS[eid];
+document.body.className=(eid==="fire")?"deep":"";
+clearSave();
+var got=S.seen.length;
+var acc="<div class='account'><p>Of the "+CANON_TOTAL+" leaves of the canon file, you received "+got+".</p>";
+if(S.dep.length){acc+="<p>Where you left the path:</p><ul>";
+for(var i=0;i<S.dep.length;i++)acc+="<li>"+esc(S.dep[i].at)+" — “"+esc(S.dep[i].did)+"”</li>";
+acc+="</ul>";}else{acc+="<p>You never left the path.</p>";}
+if(S.stray.length){acc+="<p>Small infidelities along it:</p><ul>";
+for(var j=0;j<S.stray.length;j++)acc+="<li>"+esc(S.stray[j].at)+" — “"+esc(S.stray[j].did)+"”</li>";
+acc+="</ul>";}
+acc+="</div>";
+var h="<div class='finis'>"
++"<div class='lens'></div>"
++"<h2>"+e.name+"</h2>"
++"<p class='verdict'>"+e.verdict(S)+"</p>"
++"<hr class='rule'>"
++"<div id='text'>"+e.text(S)+"</div>"
++"<hr class='rule'>"
++acc
++"<ul id='choices'><li><button class='choice bare' onclick='window.__again()'>begin again.</button></li></ul>"
++"</div>";
+stage.innerHTML=h;window.scrollTo(0,0);}
+
+title();
+})();}
+</script>
+</body>
+</html>
