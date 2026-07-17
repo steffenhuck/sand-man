@@ -36,10 +36,7 @@ h1{font-variant:small-caps;text-align:center;font-weight:normal;letter-spacing:.
 .cred{text-align:center;font-size:.8em;color:#6b5a42;margin:0 0 1.6em}
 .rule{border:none;border-top:1px solid var(--rule);margin:1.4em 4em}
 .finis h2{font-variant:small-caps;font-weight:normal;letter-spacing:.3em;text-align:center;font-size:1.3em;margin:.2em 0 .7em}
-.verdict{text-align:center;font-style:italic;margin:0 0 1.2em}
-.account{font-size:.85em;color:#4a3c2b;margin:1.2em 0 0}
-.account ul{margin:.3em 0 .8em 1.2em;padding:0}
-.account li{margin:.2em 0}
+.verdict{text-align:center;font-style:italic;margin:.2em auto 1.2em;max-width:30em;line-height:1.6}
 footer{margin:2.2em 0 3.2em;font-style:italic;font-size:.95em}
 footer a{color:#8b7350;text-decoration:none;border-bottom:1px dotted #8b7350}
 @media(max-width:640px){#leaf{padding:1.7em 1.25em}#text p{text-align:left}}
@@ -619,7 +616,11 @@ choices:function(S){return [
 
 var ENDINGS={
 fire:{name:"THE FIRE-WHEEL",
-verdict:function(S){if(has(S,"solo"))return "You died a page early, but on the right pavement.";return S.dep.length?"You died on Hoffmann’s schedule, by roads he never wrote.":"You died on Hoffmann’s schedule.";},
+verdict:function(S){
+if(has(S,"solo"))return "You steered him past Olimpia and past the madness — but you let him keep Coppola’s glass, and a page the novel never wrote ended on the same stone pavement. Not the author’s death, but a death; the book’s gravity is patient.";
+return (S.dep.length+S.stray.length)?
+"You pulled against the book, and the book was stronger. Whatever you tried along the way, the file closed over it; the glass kept his pocket, the tower kept its appointment, and Nathanael died on Hoffmann’s schedule after all.":
+"This is the ending Hoffmann wrote. Every leaf fell in its place — the letter went astray, the glass was bought, the tower was climbed — and Nathanael died on the author’s schedule. You did not steer him; you read him.";},
 text:function(S){return P(
 has(S,"solo")?
 "The fall is not in the book — the book had appointed Clara’s eyes for the lens, and a scene you did not keep. But the pavement is the same pavement, and the crowd the same crowd, and when they looked for the large grey-browed man who had bid them wait a bit, he had disappeared in the crush and confusion.":
@@ -627,7 +628,11 @@ has(S,"solo")?
 "“Several years afterwards it was reported that, outside the door of a pretty country house in a remote district, Clara had been seen sitting hand in hand with a pleasant gentleman, whilst two bright boys were playing at her feet. From this it may be concluded that she eventually found that quiet domestic happiness which her cheerful, blithesome character required, and which Nathanael, with his tempest-tossed soul, could never have been able to give her.”"
 );}},
 quiet:{name:"THE QUIET HOUSE",
-verdict:function(S){return S.f.clara?"You outlived your author.":"You outlived your author; the happy ending happened a garden away.";},
+verdict:function(S){
+if(!S.f.clara)return "In the novel Nathanael dies on the pavement and Clara finds her quiet house with another man; you saved his life but never mended the quarrel, and the book’s last page came true a garden away from him. He outlives his story on the edge of somebody else’s ending.";
+return S.f.glass?
+"This is not the ending Hoffmann wrote: in the novel the glass goes up the tower in his side-pocket and does its work. You declined one flight of stairs, and the whole tragedy stayed on the ground — the pretty house of the book’s last page, Clara’s there with another man, has Nathanael in it.":
+"This is not the ending Hoffmann wrote: in the novel Coppola’s glass goes up the tower in Nathanael’s pocket, and the pretty country house at the close belongs to Clara and another man. You kept the Sand-man’s glass out of his hand, and he walked past his own death into the happy ending the book had written for somebody else.";},
 text:function(S){return S.f.clara?P(
 "Several years afterwards, gracious reader — and the editor sets it down with a full pen and a fuller heart — outside the door of a pretty country house in a remote district, Clara was seen sitting hand in hand with a pleasant gentleman, whilst two bright boys played at her feet; and the pleasant gentleman — wipe your eyes, reader, the editor has wiped his — was Nathanael.",
 "The coffee never boils over. "+(has(S,"barometer")?"The barometer in the hall — the very one bought of a hawker on a certain 30th of October — stands at <i>set fair</i>, year in, year out. ":"The barometer in the hall stands at <i>set fair</i>, year in, year out. ")+"Nobody in that house reads mystical books before breakfast; and if a step is heard on the stair of an evening at nine, it is Lothair, come for cards.",
@@ -638,7 +643,7 @@ S.f.glass?"In a locked drawer of the writing-desk there is a small optician’s 
 S.f.glass?"The optician’s glass was found among his effects, wrapped in a page of verse, unraised for thirty years.":""
 );}},
 window:{name:"THE MAN AT THE WINDOW",
-verdict:function(S){return "You kept your eyes and lost the use of them.";},
+verdict:function(S){return "In the novel the madness ends on the tower, with Clara saved for a happier last page; you brought Nathanael through it alive but unforgiven, and the book let him go without troubling to kill him. He outlives Hoffmann’s ending without ever escaping its window.";},
 text:function(S){return P(
 "The legacy pays for two rooms in G——, an attendant on Tuesdays, and a subscription to the lectures he does not attend. He is quiet; gives no trouble; is pointed out, sometimes, to new students, who are told the story wrong.",
 (has(S,"begged")?"Siegmund wrote to Clara, as asked. If an answer came, it is not preserved. ":"")+
@@ -646,21 +651,21 @@ text:function(S){return P(
 "The file ends with the rent, paid quarterly, in advance, for years."
 );}},
 journeyman:{name:"THE JOURNEYMAN",
-verdict:function(S){return "You left the book by the door the Sand-man came in at.";},
+verdict:function(S){return "The novel needs Coppola to be a terror that cannot be faced; you made Nathanael face him, follow him, and take up his trade. The book lost its haunted poet somewhere south of the Alps — you left it, so to speak, by the door the Sand-man came in at.";},
 text:function(S){return P(
 "Of the Piedmont years the file holds: a workshop ledger; "+(has(S,"sent")?"one letter northward — two words and a blot — to which no answer is preserved;":"three letters northward begun and burned, known only by their ashes in a grate-sweeping the diary mentions;")+" and a bill of lading, Genoa, for a crate marked <i>OCCHI</i> — eyes.",
 "The editor is told that in the shops of Turin there worked, until late in the century, a grey German master famous for the naturalness — the men of the trade said the <i>mercy</i> — of his "+(has(S,"lastart")?"glass eyes, each iris painted from somebody":"lenses, which brought things out clearly, and no more than clearly")+"; that he never married; that he was heard of an evening reciting German verses to the grinding-wheel.",
 "The file ends with sand: a packet of it, fine and white, such as is used for polishing glass. Or for other things."
 );}},
 schoolmaster:{name:"THE SCHOOLMASTER",
-verdict:function(S){return "You escaped the novel on the road home.";},
+verdict:function(S){return "The novel required Nathanael back in G—— — the burnt house, the glass, the ball, the tower; you kept him home instead and married him into the ordinary life the book exists to deny him. Hoffmann’s story went on without its hero, and its hero listens for it every evening at nine, and hears nothing.";},
 text:function(S){return P(
 "The school prospers modestly; the marriage more than modestly; the child comes at midsummer, and then another. The parish register, which is all the file that remains, records promotions, christenings, a prize-day speech “much approved.”",
 (has(S,"landing")?"He stands his moment on the landing to the last, every evening at nine; and every evening, nothing comes up the stairs, and he goes in to the lamp with the look of a man whose accounts balance. ":"")+
 "The book, which needed him in G——, went on without a hero, and is not spoken of in that house. Whether the grey hawkers of this world forgot the address, or called once at noon and found the door held shut, the editor cannot say. He can say that no one in that town was ever put to bed with the Sand-man; sleepy children there were only sleepy; and eyes were for reading with, by lamplight, late."
 );}},
 advocate:{name:"THE ADVOCATE’S EYES",
-verdict:function(S){return "You found the Sand-man keeping shop; he found you a customer.";},
+verdict:function(S){return "In the novel nobody proves anything, and the automaton is a horror glimpsed once on a stair; you turned it into evidence, and the Sand-man into a defendant. The book’s demon meets you at the end as a shopkeeper — undying, unarrestable, open for business — which is Hoffmann’s nightmare in its day-clothes.";},
 text:function(S){return has(S,"spectacles_on")?P(
 "The warrant was found in the coat, folded, unserved. The coat was found on its hook in the Dresden shop, where the young German assistant — quiet, careful of hand, said by the neighbours to be the old man’s countryman or kinsman — hung it every morning for years.",
 "The file’s last leaf is a page of the shop’s order-book: lenses, spectacles, and certain finer wares, entered in two hands. The second hand is small, and even, and does not shake; the editor knows it well, having received three letters in it once, long ago, from a student frightened of a hawker.",
@@ -750,23 +755,13 @@ function finis(eid){
 var e=ENDINGS[eid];
 document.body.className=(eid==="fire")?"deep":"";
 clearSave();
-var got=S.seen.length;
-var acc="<div class='account'><p>Of the "+CANON_TOTAL+" leaves of the canon file, you received "+got+".</p>";
-if(S.dep.length){acc+="<p>Where you left the path:</p><ul>";
-for(var i=0;i<S.dep.length;i++)acc+="<li>"+esc(S.dep[i].at)+" — “"+esc(S.dep[i].did)+"”</li>";
-acc+="</ul>";}else{acc+="<p>You never left the path.</p>";}
-if(S.stray.length){acc+="<p>Small infidelities along it:</p><ul>";
-for(var j=0;j<S.stray.length;j++)acc+="<li>"+esc(S.stray[j].at)+" — “"+esc(S.stray[j].did)+"”</li>";
-acc+="</ul>";}
-acc+="</div>";
 var h="<div class='finis'>"
 +"<div class='lens'></div>"
 +"<h2>"+e.name+"</h2>"
-+"<p class='verdict'>"+e.verdict(S)+"</p>"
 +"<hr class='rule'>"
 +"<div id='text'>"+e.text(S)+"</div>"
 +"<hr class='rule'>"
-+acc
++"<p class='verdict'>"+e.verdict(S)+"</p>"
 +"<ul id='choices'><li><button class='choice bare' onclick='window.__again()'>begin again.</button></li></ul>"
 +"</div>";
 stage.innerHTML=h;window.scrollTo(0,0);}
